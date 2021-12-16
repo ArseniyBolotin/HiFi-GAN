@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from itertools import repeat
 from itertools import islice
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,6 +10,7 @@ from collate import LJSpeechCollator
 from dataset import LJSpeechDataset
 from featurizer import MelSpectrogram, MelSpectrogramConfig
 from model import Generator
+from utils import inf_loop
 from wandb_writer import WandbWriter
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -26,12 +27,6 @@ class GeneratorConfig:
         [[1, 1], [3, 1], [5, 1]],
         [[1, 1], [3, 1], [5, 1]]
     ]
-
-
-def inf_loop(data_loader):
-    """wrapper function for endless data loader."""
-    for loader in repeat(data_loader):
-        yield from loader
 
 
 if __name__ == '__main__':

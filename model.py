@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
-
-
-def get_padding(kernel_size, dilation=1):
-    return int((kernel_size*dilation - dilation)/2)
+from utils import get_padding
 
 
 class ResBlock(nn.Module):
@@ -16,7 +13,7 @@ class ResBlock(nn.Module):
             inner_block = []
             for j in range(self.inner_cycle):
                 inner_block.append(nn.LeakyReLU(0.1))
-                inner_block.append(nn.Conv1d(channels, channels, kernel_size=k, dilation=D[i][j], padding=get_padding(k,D[i][j])))
+                inner_block.append(nn.Conv1d(channels, channels, kernel_size=k, dilation=D[i][j], padding=get_padding(k, D[i][j])))
             self.blocks.append(nn.Sequential(*inner_block))
 
     def forward(self, x):
