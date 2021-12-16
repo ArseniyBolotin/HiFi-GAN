@@ -13,7 +13,7 @@ class ResBlock(nn.Module):
         super().__init__()
         self.inner_cycle = len(D[0])
         self.outer_cycle = len(D)
-        self.blocks = []
+        self.blocks = nn.ModuleList()
         for i in range(self.outer_cycle):
             inner_block = []
             for j in range(self.inner_cycle):
@@ -30,14 +30,14 @@ class ResBlock(nn.Module):
 class MRF(nn.Module):
     def __init__(self, channels, k_r, D_r):
         super().__init__()
-        self.res_blocks = []
+        self.res_blocks = nn.ModuleList()
         for k, D in zip(k_r, D_r):
             self.res_blocks.append(ResBlock(channels, k, D))
 
     def forward(self, x):
         out = torch.zeros_like(x)
         for res_block in self.res_blocks:
-            out += res_block(x)
+            out = out + res_block(x)
         return out
 
 
@@ -62,7 +62,7 @@ class Generator(nn.Module):
         self.layers.append(nn.Conv1d(80, channels, kernel_size=7, stride=1, padding=3))
         for k in config.k_u:
             self.layers.append(GeneratorBlock(channels, channels // 2, k, config.k_r, config.D_r))
-            channels //= 2
+            channels = channels // 2
 
         self.layers.append(nn.LeakyReLU(0.1, True))
         self.layers.append(nn.Conv1d(channels, 1, kernel_size=7, stride=1, padding=3))

@@ -13,7 +13,7 @@ from model import Generator
 from wandb_writer import WandbWriter
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+torch.autograd.set_detect_anomaly(True)
 
 @dataclass
 class GeneratorConfig:
@@ -54,30 +54,31 @@ if __name__ == '__main__':
         generator = torch.load("./resume.pt")
     except:
         generator = Generator(GeneratorConfig(), MelSpectrogramConfig()).to(device)
-    dataloader = DataLoader(LJSpeechDataset('./data/dataset/LJSpeech'), batch_size=32, collate_fn=LJSpeechCollator())
+    dataloader = DataLoader(LJSpeechDataset('./data/dataset/LJSpeech'), batch_size=3, collate_fn=LJSpeechCollator())
     wandb_writer = WandbWriter()
-    featurizer = MelSpectrogram(MelSpectrogramConfig())
+    featurizer = MelSpectrogram(MelSpectrogramConfig()).to(device)
 
     n_iters = 2000
-    save_step = 2000
+    save_step = 2001
     output_step = 10
 
     generator.train()
     criterion = nn.L1Loss()
 
     optimizer = optim.Adam(generator.parameters(), lr=2e-4, betas=(0.8, 0.99), weight_decay=0.01)
-    warmup_steps = 4000
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.999)
 
     current_iter = 1
 
     batch = list(islice(dataloader, 1))[0]
-    mels = featurizer(batch.waveform).to(device)
+    mels = featurizer(batch.waveform.to(device))
 
     while True:
         preds = generator(mels)
+        mel_preds = featurizer(preds.squeeze(1))
         optimizer.zero_grad()
-        loss = criterion(featurizer(preds), mels)
+        preds_common_shape = min(mel_preds.size(2), mels.size(2))
+        loss = 45 * criterion(mel_preds[:, :, :preds_common_shape], mels[:, :, :preds_common_shape])
         loss.backward()
         optimizer.step()
         scheduler.step()

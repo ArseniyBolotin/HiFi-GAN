@@ -13,7 +13,7 @@ class WandbWriter:
             wandb.login()
 
             wandb.init(
-                project='TTS'
+                project='HiFi-GAN'
             )
             self.wandb = wandb
 
