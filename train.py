@@ -15,6 +15,7 @@ from wandb_writer import WandbWriter
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.autograd.set_detect_anomaly(True)
 
+
 @dataclass
 class GeneratorConfig:
     h_u = 512
@@ -58,8 +59,8 @@ if __name__ == '__main__':
     wandb_writer = WandbWriter()
     featurizer = MelSpectrogram(MelSpectrogramConfig()).to(device)
 
-    n_iters = 2000
-    save_step = 2001
+    n_iters = 10000
+    save_step = 200001
     output_step = 10
 
     generator.train()
@@ -90,7 +91,7 @@ if __name__ == '__main__':
             wandb_writer.add_scalar('Learning rate', scheduler.get_last_lr()[0])
 
         if current_iter % save_step == 0:
-            model_name = 'fast_speech_' + str(current_iter) + '.pt'
+            model_name = 'generator_' + str(current_iter) + '.pt'
             torch.save(generator, model_name)
             if google_drive:
                 drive_service = build('drive', 'v3')
