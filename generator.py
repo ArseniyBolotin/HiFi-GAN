@@ -55,7 +55,7 @@ class Generator(nn.Module):
         super().__init__()
         self.layers = []
         channels = config.h_u
-        self.layers.append(nn.Conv1d(80, channels, kernel_size=7, stride=1, padding=3))
+        self.layers.append(nn.Conv1d(mel_spectrogram_config.n_mels, channels, kernel_size=7, stride=1, padding=3))
         for k in config.k_u:
             self.layers.append(GeneratorBlock(channels, channels // 2, k, config.k_r, config.D_r))
             channels = channels // 2
